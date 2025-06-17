@@ -1,6 +1,5 @@
-import os
 import tkinter as tk
-from tkinter import filedialog
+from tkinter import messagebox
 import pyautogui
 import threading
 import time
@@ -9,8 +8,6 @@ class AutoTypeApp:
     def __init__(self, root):
         self.root = root
         self.root.title("AUTO ESCRITOR")
-
-        self.text_var = tk.StringVar()
 
         self.speed_var = tk.DoubleVar()
         self.speed_var.set(0.050)
@@ -26,8 +23,8 @@ class AutoTypeApp:
 
     def create_widgets(self):
         tk.Label(self.root, text="DIGITE O TEXTO:").pack(pady=5)
-        text_entry = tk.Text(self.root, wrap="word", width=50, height=10)
-        text_entry.pack(pady=5)
+        self.text_entry = tk.Text(self.root, wrap="word", width=50, height=10)
+        self.text_entry.pack(pady=5)
         
         tk.Label(self.root, text="VELOCIDADE:").pack(pady=5)
         speed_scale = tk.Scale(self.root, from_=0.010, to=0.100, resolution=0.001, orient=tk.HORIZONTAL,
@@ -39,23 +36,28 @@ class AutoTypeApp:
                                      variable=self.start_delay_var, length=200)
         start_delay_scale.pack(pady=5)
 
-        tk.Button(self.root, text="INICIAR", command=lambda: self.start_typing(text_entry)).pack(pady=10)
-        tk.Button(self.root, text="LIMPAR", command=self.clear_fields).pack(pady=10)
+        tk.Button(self.root, text="INICIAR", command=self.validate_and_start).pack(pady=10)
+        tk.Button(self.root, text="LIMPAR", command=self.validate_and_clear).pack(pady=10)
 
-    def start_typing(self, text_entry):
-        text = text_entry.get("1.0", tk.END)
-        speed = self.speed_var.get()
-        start_delay = self.start_delay_var.get()
-
-        self.root.iconify()  
-        threading.Thread(target=self.type_text, args=(text, speed, start_delay)).start()
+    def validate_and_start(self):
+        text = self.text_entry.get("1.0", tk.END).strip()
+        if not text:
+            messagebox.showwarning("Campo vazio", "Por favor, digite algum texto antes de iniciar.")
+            return
+        self.root.iconify()
+        threading.Thread(target=self.type_text, args=(text, self.speed_var.get(), self.start_delay_var.get())).start()
 
     def type_text(self, text, speed, start_delay):
         time.sleep(start_delay)
         pyautogui.write(text, interval=speed)
+        messagebox.showinfo("Finalizado", "A digitação foi concluída com sucesso!")
 
-    def clear_fields(self):
-        self.text_var.set("")
+    def validate_and_clear(self):
+        text = self.text_entry.get("1.0", tk.END).strip()
+        if not text:
+            messagebox.showinfo("Nada para limpar", "O campo já está vazio.")
+            return
+        self.text_entry.delete("1.0", tk.END)
 
 if __name__ == "__main__":
     root = tk.Tk()
