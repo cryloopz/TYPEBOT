@@ -1,0 +1,4 @@
+__pycache__/
+*.pyc
+typebot_recordes.json
+.venv/
